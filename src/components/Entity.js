@@ -7,13 +7,8 @@ class Entity {
         this.prevY = 0;
         this.moved = false;
         this.size = size;
-        // this.img = new Image(16, 16);
-        // this.loaded = false;
         this.attributes = { ...attributes };
-        // var self = this;
-        // this.img.onload = function() { self.loaded = true; }
-
-        // this.img.onload();
+        // Stats
     }
 
     action(verb, world) {
@@ -22,9 +17,6 @@ class Entity {
 
     // Draw the entity
     draw(context) {
-        // if (this.prevX !== this.x && this.prevY !== this.y || this.moved === false) {
-
-        // console.log(`${this.attributes.name} -> PrevX: ${this.prevX} | X: ${this.x} || Loaded: ${this.loaded}`);
         if (this.attributes.imgSrc) {
             if (this.attributes.type === "player") {
                 const image = new Image(16, 16);
@@ -50,13 +42,7 @@ class Entity {
             let m_canvas = document.getElementById("loot-canvas");
             let m_context = m_canvas.getContext('2d');
             const { width, height } = m_canvas.getBoundingClientRect();
-            // m_context.save();
             m_context.clearRect(0, 0, width, height);
-            // m_context.drawImage(
-            //     image,
-            //     this.x * this.size + (this.attributes.offset ? this.attributes.offset.x : 0),
-            //     this.y * this.size + (this.attributes.offset ? this.attributes.offset.y : 0)
-            // );
             image.addEventListener("load", () => {
                 m_context.drawImage(
                     image,
@@ -64,7 +50,6 @@ class Entity {
                     this.y * this.size + (this.attributes.offset ? this.attributes.offset.y : 0)
                 );
             });
-            // this.moved = true;
             m_context.restore();
             return;
         }
@@ -76,7 +61,6 @@ class Entity {
             this.x * this.size + (this.attributes.offset ? this.attributes.offset.x : 0),
             this.y * this.size + (this.attributes.offset ? this.attributes.offset.y : 0)
         );
-        // }
     }
 }
 

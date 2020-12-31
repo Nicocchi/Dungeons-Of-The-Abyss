@@ -1,5 +1,6 @@
-import { Map } from "rot-js";
+import { Map, RNG } from "rot-js";
 import Player from "./Player";
+import Spawner from "./Spawner";
 
 class World {
     constructor(width, height, tilesize) {
@@ -8,7 +9,7 @@ class World {
         this.tilesize = tilesize;
         this.entities = [new Player(0, 0, 16)];
         this.entitiesToDraw = this.entities;
-        this.history = ["You entered the dungeon.", '---'];
+        this.history = [<p style={{color: "#ffff00"}}>Welcome to Dungeons of the Abyss</p>, 'Press ? to display help menu'];
         this.levelGenerated = false;
 
         // Create the worldmap
@@ -41,24 +42,13 @@ class World {
         }
 
         if (this.isWall(tempPlayer.x, tempPlayer.y)) {
+            this.addToHistory(<p style={{color: "#c23538"}}>Path is blocked</p>)
             // console.log(`Way blocked at ${tempPlayer.x}:${tempPlayer.y}!`);
         } else {
             this.player.move(dx, dy);
             this.entitiesToDraw.push(this.player)
         }
     }
-
-    // useItem(item) {
-    //     console.log("USE", item);
-    //     switch(item.attributes.type) {
-    //         case "health-potion": {
-    //             this.player.heal(item.attributes.healAmount);
-    //             this.player.inventory = this.player.inventory.filter(e => e !== item);
-    //             var m_ctx2 = document.getElementById('loot-canvas').getContext('2d')
-    //             this.draw(m_ctx2);
-    //         }
-    //     }
-    // }
 
     // Adds an entity to the world
     add(entity) {
@@ -75,15 +65,28 @@ class World {
 
     // Moves an entity to a space not in a wall or occupied by another entity
     moveToSpace(entity) {
-        for (let x = entity.x; x < this.width; x++) {
-            for (let y = entity.y; y < this.height; y++) {
-                if (this.worldmap[x][y] === 0 && !this.getEntityAtLocatoin(x, y)) {
-                    entity.x = x;
-                    entity.y = y;
-                    return;
-                }
+        const coords = this.generateCoords(this);
+        entity.x = coords.x;
+        entity.y = coords.y;
+    }
+
+    generateCoords(world) {
+        let x = this.getRandomInt(world.width - 1);
+        let y = this.getRandomInt(world.width - 1);
+        if (world.worldmap[x][y] === 1 || world.worldmap[x][y] === undefined) {
+            return this.generateCoords(world);
+        } else {
+            const coords = {
+                x,
+                y,
+                worldPosition: world.worldmap[x][y]
             }
+            return coords;
         }
+    }
+
+    getRandomInt(max) {
+        return Math.floor(Math.random() * Math.floor(max));
     }
 
     // Generate a random map
@@ -93,6 +96,40 @@ class World {
                 this.worldmap[x][y] = Math.round(Math.random()); // Puts either a 0 or 1 in the tile
             }
         }
+    }
+
+    // Generate a rogue map
+    createRogueMap() {
+        var map = new Map.Rogue(this.width, this.height, {cellHeight: 3, cellWidth: 6});
+        console.log(map);
+        var userCallback = (x, y, value) => {
+            // Make sure there are walls on all the edges
+            if (x === 0 || y === 0 || x === this.width - 1 || y === this.height - 1) {
+                this.worldmap[x][y] = 1; // Create walls around the edges of map
+                return;
+            }
+            this.worldmap[x][y] = value === 0 ? 0 : 1;
+        };
+
+        map.create(userCallback);
+        const coords = this.generateCoords(this);
+        this.player.x = coords.x;
+        this.player.y = coords.y;
+        // this.moveToSpace(this.player);
+
+        this.entitiesToDraw = this.entities;
+        var m_canvas = document.getElementById('fg-canvas')
+        var m_ctx2 = document.getElementById('loot-canvas').getContext('2d')
+        var m_context = m_canvas.getContext('2d');
+        m_context.clearRect(0, 0, this.width * this.tilesize, this.height * this.tilesize);
+        m_ctx2.clearRect(0, 0, this.width * this.tilesize, this.height * this.tilesize);
+    }
+
+    spawn() {
+        let spawner = new Spawner(this);
+        spawner.spawnLoot(3);
+        spawner.spawnMonsters(6);
+        spawner.spawnStairs();
     }
 
     // Generate a cellular map
@@ -127,20 +164,30 @@ class World {
         if (!this.levelGenerated) {
             for (let x = 0; x < this.width; x++) {
                 for (let y = 0; y < this.height; y++) {
+                    this.drawFloor(context, x, y);
                     if (this.worldmap[x][y] === 1) this.drawWall(context, x, y);
                 }
             }
         }
 
         // Draw entities
-        //TODO: Check if entity position has updates, if so, only draw that entites update
-        // this.entities.forEach((entity) => {
-        //     entity.draw(context);
-        // });
         this.entitiesToDraw.forEach((entity) => {
             entity.draw(context);
             this.entitiesToDraw = this.entitiesToDraw.filter(e => e !== entity);
         });
+    }
+
+    drawFloor(context, x, y) {
+        context.fillStyle = "#fff";
+
+        // Draw the floor on the background canvas
+        const image = new Image();
+        image.src = 'images/FloorTile_002.png';
+        var m_canvas = document.getElementById('bg-canvas')
+        var m_context = m_canvas.getContext('2d');
+        image.addEventListener("load", () => {
+            m_context.drawImage(image, x * this.tilesize, y * this.tilesize);
+        })
     }
 
     // Draw the wall
@@ -148,13 +195,11 @@ class World {
         context.fillStyle = "#fff";
 
         // Draw the wall on the foreground canvas
-        const image = new Image(16, 16);
-        image.src = 'images/BrickWall_001.png';
+        const image = new Image();
+        image.src = 'images/BrickWall_003.png';
         var m_canvas = document.getElementById('fg-canvas')
         var m_context = m_canvas.getContext('2d');
-        m_context.drawImage(image, x * this.tilesize, y * this.tilesize);
         image.addEventListener("load", () => {
-            // console.log("Draw WALL")
             m_context.drawImage(image, x * this.tilesize, y * this.tilesize);
         })
         this.levelGenerated = true;
@@ -167,7 +212,7 @@ class World {
 
     addToHistory(history) {
         this.history.push(history);
-        if (this.history.length > 6) this.history.shift();
+        if (this.history.length > 14) this.history.shift();
     }
 }
 

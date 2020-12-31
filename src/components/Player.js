@@ -6,11 +6,18 @@ class Player extends Entity {
     attributes = {
         name: "Player",
         ascii: "@",
-        health: 10,
+        health: 50,
         gold: 0,
         offset: {x: 0, y: -6},
         imgSrc: "/images/Person_001.png" ,
-        type: "player"
+        type: "player",
+        baseAtk: 10,
+        baseDef: 0,
+        atk: 1,
+        def: 1,
+        leftHand: "",
+        rightHand: "",
+
     }
 
     // Move the player
@@ -23,7 +30,6 @@ class Player extends Entity {
     }
 
     use(item) {
-        console.log("USE", item);
         switch(item.attributes.type) {
             case "health-potion": {
                 this.heal(item.attributes.healAmount);
@@ -41,6 +47,7 @@ class Player extends Entity {
 
     // Add item to inventory
     add(item) {
+        if (item.attributes.type === "gold") return;
         this.inventory.push(item);
     }
 

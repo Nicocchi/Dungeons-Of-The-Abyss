@@ -13,13 +13,19 @@ class Stairs extends Entity {
     action(verb, world) {
         if (verb === 'bump') {
             world.addToHistory("You move down the stairs...");
+
+            // Generate world
             world.setLevelGenerated(false);
-            world.createCellularMap();
-            world.player.x = 0;
-            world.player.y = 0;
+            world.createRogueMap();
+
+            // Re-position player
             world.moveToSpace(world.player);
+
+            // Clear all entities except the player
             world.entities = world.entities.filter(e => e === world.player);
             world.entitiesToDraw = world.entities;
+
+            // Spawn new loot and monsters
             let spawner = new Spawner(world);
             spawner.spawnLoot(10);
             spawner.spawnMonsters(6);

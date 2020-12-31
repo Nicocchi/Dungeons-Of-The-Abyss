@@ -4,6 +4,9 @@ import InputManager from "./InputManager";
 import Player from "./Player";
 import World from "./World";
 import Spawner from "./Spawner";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faAngleRight } from "@fortawesome/free-solid-svg-icons";
+import { faCircle } from "@fortawesome/free-solid-svg-icons";
 
 const Main = ({ width, height, tilesize }) => {
     const canvasRef = useRef();
@@ -26,12 +29,10 @@ const Main = ({ width, height, tilesize }) => {
         console.log("Create Map");
         let newWorld = new World();
         Object.assign(newWorld, world);
-        newWorld.createCellularMap();
+        newWorld.createRogueMap();
         newWorld.moveToSpace(world.player);
-        let spawner = new Spawner(newWorld);
-        spawner.spawnLoot(10);
-        spawner.spawnMonsters(6);
-        spawner.spawnStairs();
+        newWorld.spawn();
+        
         setWorld(newWorld);
     }, []);
 
@@ -56,74 +57,108 @@ const Main = ({ width, height, tilesize }) => {
         let newWorld = new World();
         Object.assign(newWorld, world);
         const ctx = canvasRef.current.getContext("2d");
+        // ctx.scale(9, 3)
         newWorld.player.use(item);
         setWorld(newWorld);
-    }
+    };
 
     return (
         <div id="GameWrapper" className="Game-Wrapper">
-            <canvas
-                id="src-canvas"
-                ref={canvasRef}
-                width={width * tilesize}
-                height={height * tilesize}
-                className="Game-Canvas"
-            ></canvas>
-            <canvas
-                width={width * tilesize}
-                height={height * tilesize}
-                className="Game-CanvasBG"
-                style={{ backgroundImage: `url(${process.env.PUBLIC_URL}/images/FloorTile_001.png)` }}
-            ></canvas>
-            <canvas
-                id="loot-canvas"
-                width={width * tilesize}
-                height={height * tilesize}
-                className="Game-CanvasLoot"
-            ></canvas>
-            <canvas
-                id="player-canvas"
-                width={width * tilesize}
-                height={height * tilesize}
-                className="Game-CanvasPlayer"
-            ></canvas>
-            <canvas
-                id="fg-canvas"
-                width={width * tilesize}
-                height={height * tilesize}
-                className="Game-CanvasFG"
-            ></canvas>
-            <div className="Inventory-Wrapper">
-                <p>Inventory:</p>
-                <ul>
-                    {world.player.inventory.map((item, index) => (
-                        <li style={{cursor: "pointer"}} onClick={() => handleItem(item)}  key={index}>{item.attributes.name}</li>
-                    ))}
-                </ul>
-            </div>
+            <div className="container">
+                <canvas
+                    id="src-canvas"
+                    ref={canvasRef}
+                    width={width * tilesize}
+                    height={height * tilesize}
+                    style={{ zIndex: 2 }}
+                ></canvas>
+                <canvas
+                id="bg-canvas"
+                    width={width * tilesize}
+                    height={height * tilesize}
+                    style={{
+                        zIndex: 0,
+                        backgroundColor: "#201208"
+                    }}
+                ></canvas>
 
-            <div className="Stats-Wrapper">
-                    <p>Health: {world.player.attributes.health}</p>
-                    <p>Gold: {world.player.attributes.gold}</p>
+                <canvas
+                    id="loot-canvas"
+                    width={width * tilesize}
+                    height={height * tilesize}
+                    style={{ zIndex: 2 }}
+                ></canvas>
+                <canvas
+                    id="player-canvas"
+                    width={width * tilesize}
+                    height={height * tilesize}
+                    style={{ zIndex: 2 }}
+                ></canvas>
+                <canvas
+                    id="fg-canvas"
+                    width={width * tilesize}
+                    height={height * tilesize}
+                    style={{ zIndex: 1, opacity: "0.6" }}
+                ></canvas>
             </div>
-            <div
-                className="Log-Wrapper"
-                style={{
-                    border: "10px solid transparent",
-                    padding: "15px",
-                    borderImage: `url(${process.env.PUBLIC_URL}/images/CastleWall_001.png)`,
-                }}
-            >
-                <p>Log</p>
-                <ul>
-                    {world.history.map((item, index) => (
-                        <li key={index}>{item}</li>
+            <div className="Game-Sidebar">
+                <div className="Stats-Wrapper">
+                    <span className="hpbar-span">
+                        <p className="hp-text">HP:</p>
+                        <span className="hp-span">
+                            <p className="hp-num">{world.player.attributes.health}/</p>
+                            <p>50</p>
+                        </span>
+                    </span>
+                    <span
+                        style={{
+                            fontWeight: "bold",
+                            fontSize: "0.8em",
+                            display: "flex",
+                            justifyContent: "space-between",
+                        }}
+                    >
+                        <p>Gold:</p>
+                        <p className="hp-num">{world.player.attributes.gold}</p>
+                    </span>
+                    <div className="base-stats">
+                        <span>
+                            <p>Atk:</p>
+                            <p>{world.player.attributes.baseAtk * world.player.attributes.atk}</p>
+                        </span>
+                        <span>
+                            <p>Def:</p>
+                            <p>{world.player.attributes.baseDef * world.player.attributes.def}</p>
+                        </span>
+                        <span>
+                            <p>Left: </p>
+                            <p>{world.player.attributes.leftHand}</p>
+                        </span>
+                        <span>
+                            <p>Right:</p>
+                            <p>{world.player.attributes.rightHand}</p>
+                        </span>
+                    </div>
+                </div>
+                <div className="Inventory-Wrapper">
+                    <h4>Inventory</h4>
+                    {world.player.inventory.map((item, index) => (
+                        <p className="item" style={{ cursor: "pointer" }} onClick={() => handleItem(item)} key={index}>
+                            <FontAwesomeIcon style={{ marginRight: "10px", fontSize: "0.6em" }} icon={faCircle} />
+                            {item.attributes.name}
+                        </p>
                     ))}
-                </ul>
+                </div>
+                <div className="Log-Wrapper">
+                    <ul>
+                        {world.history.map((item, index) => (
+                            <li key={index}>
+                                <FontAwesomeIcon style={{ marginRight: "10px" }} icon={faAngleRight} /> {item}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             </div>
-            {/* <div >
-                <img id="wallImg" src="images/BrickWall_001.png" width="16" height="16" />
-            </div> */}
         </div>
     );
 };
