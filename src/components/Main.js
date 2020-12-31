@@ -107,7 +107,7 @@ const Main = ({ width, height, tilesize }) => {
                         <p className="hp-text">HP:</p>
                         <span className="hp-span">
                             <p className="hp-num">{world.player.attributes.health}/</p>
-                            <p>50</p>
+                            <p>{world.player.attributes.health + world.player.attributes.bonusHealth}</p>
                         </span>
                     </span>
                     <span
@@ -124,18 +124,18 @@ const Main = ({ width, height, tilesize }) => {
                     <div className="base-stats">
                         <span>
                             <p>Atk:</p>
-                            <p>{world.player.attributes.baseAtk * world.player.attributes.atk}</p>
+                            <p>{world.player.attributes.baseAtk + world.player.attributes.atk}</p>
                         </span>
                         <span>
                             <p>Def:</p>
-                            <p>{world.player.attributes.baseDef * world.player.attributes.def}</p>
+                            <p>{world.player.attributes.baseDef + world.player.attributes.def}</p>
                         </span>
                         <span>
-                            <p>Left: </p>
+                            <p>L-Hand: </p>
                             <p>{world.player.attributes.leftHand}</p>
                         </span>
                         <span>
-                            <p>Right:</p>
+                            <p>R-Hand:</p>
                             <p>{world.player.attributes.rightHand}</p>
                         </span>
                     </div>
