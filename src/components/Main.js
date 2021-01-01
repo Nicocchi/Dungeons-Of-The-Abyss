@@ -12,6 +12,7 @@ const Main = ({ width, height, tilesize }) => {
     const canvasRef = useRef();
     // const [player, setPlayer] = useState(new Player(1, 2, tilesize));
     const [world, setWorld] = useState(new World(width, height, tilesize));
+    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
     let inputManager = new InputManager();
 
     useEffect(() => {
@@ -29,16 +30,24 @@ const Main = ({ width, height, tilesize }) => {
         console.log("Create Map");
         let newWorld = new World();
         Object.assign(newWorld, world);
-        newWorld.createRogueMap();
-        newWorld.moveToSpace(world.player);
-        newWorld.spawn();
-        
+        newWorld.createBSPMap();
+        // newWorld.moveToSpace(world.player);
+        // newWorld.spawn();
+
         setWorld(newWorld);
     }, []);
 
     useEffect(() => {
         console.log("Draw to canvas");
         const ctx = canvasRef.current.getContext("2d");
+        // canvasRef.current.addEventListener(
+        //     "mousemove",
+        //     function (evt) {
+        //         var mousePos = getMousePos(canvasRef.current, evt);
+        //         // setMousePos(mousePos);
+        //     },
+        //     false
+        // );
         ctx.clearRect(0, 0, width * tilesize, height * tilesize);
         world.draw(ctx);
         // player.draw(ctx);
@@ -49,7 +58,7 @@ const Main = ({ width, height, tilesize }) => {
         let newWorld = new World();
         Object.assign(newWorld, world);
         const ctx = canvasRef.current.getContext("2d");
-        newWorld.movePlayer(data.x, data.y, ctx);
+        // newWorld.movePlayer(data.x, data.y, ctx);
         setWorld(newWorld);
     };
 
@@ -66,19 +75,26 @@ const Main = ({ width, height, tilesize }) => {
         <div id="GameWrapper" className="Game-Wrapper">
             <div className="container">
                 <canvas
+                    id="myCanvas"
+                    width={width * tilesize}
+                    height={height * tilesize}
+                    style={{ zIndex: 6, backgroundColor: "transparent" }}
+                ></canvas>
+                <canvas
                     id="src-canvas"
                     ref={canvasRef}
                     width={width * tilesize}
                     height={height * tilesize}
-                    style={{ zIndex: 2 }}
+                    style={{ zIndex: 12 }}
                 ></canvas>
                 <canvas
-                id="bg-canvas"
+                    id="bg-canvas"
                     width={width * tilesize}
                     height={height * tilesize}
                     style={{
                         zIndex: 0,
-                        backgroundColor: "#201208"
+                        backgroundColor: "#201208",
+                        display: "none",
                     }}
                 ></canvas>
 
@@ -86,19 +102,19 @@ const Main = ({ width, height, tilesize }) => {
                     id="loot-canvas"
                     width={width * tilesize}
                     height={height * tilesize}
-                    style={{ zIndex: 2 }}
+                    style={{ zIndex: 2, display: "none" }}
                 ></canvas>
                 <canvas
                     id="player-canvas"
                     width={width * tilesize}
                     height={height * tilesize}
-                    style={{ zIndex: 2 }}
+                    style={{ zIndex: 2, display: "none" }}
                 ></canvas>
                 <canvas
                     id="fg-canvas"
                     width={width * tilesize}
                     height={height * tilesize}
-                    style={{ zIndex: 1, opacity: "0.6" }}
+                    style={{ zIndex: 7, opacity: "0.6" }}
                 ></canvas>
             </div>
             <div className="Game-Sidebar">
@@ -107,7 +123,7 @@ const Main = ({ width, height, tilesize }) => {
                         <p className="hp-text">HP:</p>
                         <span className="hp-span">
                             <p className="hp-num">{world.player.attributes.health}/</p>
-                            <p>{world.player.attributes.health + world.player.attributes.bonusHealth}</p>
+                            <p>{world.player.attributes.maxHealth + world.player.attributes.bonusHealth}</p>
                         </span>
                     </span>
                     <span
@@ -159,9 +175,21 @@ const Main = ({ width, height, tilesize }) => {
                     </ul>
                 </div>
             </div>
+            <img id="GFG" src="/images/BrickWall_003.png" />
+            <p style={{ position: "absolute", top: 0, left: 0, color: "#FFF" }}>
+                X: {mousePos.x}, Y:{mousePos.y}
+            </p>
         </div>
     );
 };
+
+function getMousePos(canvas, evt) {
+    var rect = canvas.getBoundingClientRect();
+    return {
+        x: evt.clientX - rect.left,
+        y: evt.clientY - rect.top,
+    };
+}
 
 Main.propTypes = {
     width: PropTypes.number,
