@@ -1,6 +1,7 @@
 import Point from "./Point";
 import Rectangle from "./Rectangle";
 import { randomNumber } from "../Utils/utils";
+import Vector2 from "./Vector2";
 
 class Leaf {
     constructor(x = 0, y = 0, width = 1, height = 1, minLeafSize = 6) {
@@ -51,6 +52,19 @@ class Leaf {
         return true;
     }
 
+    generateRectArea(rect) {
+        let area = [];
+        for (let j = 0; j < rect.height; j++) {
+            let row = [];
+            for (let i = 0; i < rect.width; i++) {
+                row.push(new Vector2(rect.x + i, rect.y + j));
+            }
+            area.push(row);
+        }
+
+        return area;
+    }
+
     // Create rooms in each of the Leafs. Starting from the biggest (root) Leaf
     // all the way to the smallest Leafs with no children.
     createRooms() {
@@ -78,11 +92,15 @@ class Leaf {
             );
 
             // this.room = {x: this.x + roomPos.x, y: this.y + roomPos.y, width: roomSize.x, height: roomSize.y}
-            this.room = new Rectangle(this.x + roomPos.x, this.y + roomPos.y, roomSize.x, roomSize.y);
+            // this.room = new Rectangle(this.x + roomPos.x, this.y + roomPos.y, roomSize.x, roomSize.y);
+            const rect = new Rectangle(this.x + roomPos.x, this.y + roomPos.y, roomSize.x, roomSize.y);
+            const area = this.generateRectArea(rect);
+            this.room = {
+                rect,
+                area,
+            };
         }
     }
-
-    
 
     getRoom() {
         // Iterate all the way through these leafs to find a room, if one exists.
@@ -110,8 +128,14 @@ class Leaf {
         // This is trying to figure out which point is where and then either draw a straight line, or a pair of lines
         // to make a right-angle to connect them.
 
-        let point1 = new Point(randomNumber(l.left + 1, l.right - 2), randomNumber(l.top + 1, l.bottom - 2));
-        let point2 = new Point(randomNumber(r.left + 1, r.right - 2), randomNumber(r.top + 1, r.bottom - 2));
+        let point1 = new Point(
+            randomNumber(l.rect.left + 1, l.rect.right - 2),
+            randomNumber(l.rect.top + 1, l.rect.bottom - 2)
+        );
+        let point2 = new Point(
+            randomNumber(r.rect.left + 1, r.rect.right - 2),
+            randomNumber(r.rect.top + 1, r.rect.bottom - 2)
+        );
 
         let w = point2.x - point1.x;
         let h = point2.y - point1.y;
@@ -119,51 +143,147 @@ class Leaf {
         if (w < 0) {
             if (h < 0) {
                 if (Math.floor(Math.random() * Math.floor(1.25)) < 1.25) {
-                    this.halls.push(new Rectangle(point2.x, point1.y, Math.abs(w), 1));
-                    this.halls.push(new Rectangle(point2.x, point2.y, 1, Math.abs(h)));
+                    const rectA = new Rectangle(point2.x, point1.y, Math.abs(w), 1);
+                    const rectB = new Rectangle(point2.x, point2.y, 1, Math.abs(h));
+                    const areaA = this.generateRectArea(rectA);
+                    const areaB = this.generateRectArea(rectB);
+                    const area = areaA.concat(areaB);
+                    const hall = {
+                        rectA,
+                        rectB,
+                        area,
+                    };
+                    this.halls.push(hall);
                 } else {
-                    this.halls.push(new Rectangle(point2.x, point2.y, Math.abs(w), 1));
-                    this.halls.push(new Rectangle(point1.x, point2.y, 1, Math.abs(h)));
+                    const rectA = new Rectangle(point2.x, point2.y, Math.abs(w), 1);
+                    const rectB = new Rectangle(point1.x, point2.y, 1, Math.abs(h));
+                    const areaA = this.generateRectArea(rectA);
+                    const areaB = this.generateRectArea(rectB);
+                    const area = areaA.concat(areaB);
+                    const hall = {
+                        rectA,
+                        rectB,
+                        area,
+                    };
+                    this.halls.push(hall);
                 }
             } else if (h > 0) {
                 if (Math.floor(Math.random() * Math.floor(1.25)) < 1.25) {
-                    this.halls.push(new Rectangle(point2.x, point1.y, Math.abs(w), 1));
-                    this.halls.push(new Rectangle(point2.x, point1.y, 1, Math.abs(h)));
+                    const rectA = new Rectangle(point2.x, point1.y, Math.abs(w), 1);
+                    const rectB = new Rectangle(point2.x, point1.y, 1, Math.abs(h));
+                    const areaA = this.generateRectArea(rectA);
+                    const areaB = this.generateRectArea(rectB);
+                    const area = areaA.concat(areaB);
+                    const hall = {
+                        rectA,
+                        rectB,
+                        area,
+                    };
+                    this.halls.push(hall);
                 } else {
-                    this.halls.push(new Rectangle(point2.x, point2.y, Math.abs(w), 1));
-                    this.halls.push(new Rectangle(point1.x, point1.y, 1, Math.abs(h)));
+                    const rectA = new Rectangle(point2.x, point2.y, Math.abs(w), 1);
+                    const rectB = new Rectangle(point1.x, point1.y, 1, Math.abs(h));
+                    const areaA = this.generateRectArea(rectA);
+                    const areaB = this.generateRectArea(rectB);
+                    const area = areaA.concat(areaB);
+                    const hall = {
+                        rectA,
+                        rectB,
+                        area,
+                    };
+                    this.halls.push(hall);
                 }
             } else {
                 // if (h === 0)
-                this.halls.push(new Rectangle(point2.x, point2.y, Math.abs(w), 1));
+                const rectA = new Rectangle(point2.x, point2.y, Math.abs(w), 1);
+                const area = this.generateRectArea(rectA);
+                const hall = {
+                    rectA,
+                    area,
+                };
+                this.halls.push(hall);
             }
         } else if (w > 0) {
             if (h < 0) {
                 if (Math.floor(Math.random() * Math.floor(1.25)) < 1.25) {
-                    this.halls.push(new Rectangle(point1.x, point2.y, Math.abs(w), 1));
-                    this.halls.push(new Rectangle(point1.x, point2.y, 1, Math.abs(h)));
+                    const rectA = new Rectangle(point1.x, point2.y, Math.abs(w), 1);
+                    const rectB = new Rectangle(point1.x, point2.y, 1, Math.abs(h));
+                    const areaA = this.generateRectArea(rectA);
+                    const areaB = this.generateRectArea(rectB);
+                    const area = areaA.concat(areaB);
+                    const hall = {
+                        rectA,
+                        rectB,
+                        area,
+                    };
+                    this.halls.push(hall);
                 } else {
-                    this.halls.push(new Rectangle(point1.x, point1.y, Math.abs(w), 1));
-                    this.halls.push(new Rectangle(point2.x, point2.y, 1, Math.abs(h)));
+                    const rectA = new Rectangle(point1.x, point1.y, Math.abs(w), 1);
+                    const rectB = new Rectangle(point2.x, point2.y, 1, Math.abs(h));
+                    const areaA = this.generateRectArea(rectA);
+                    const areaB = this.generateRectArea(rectB);
+                    const area = areaA.concat(areaB);
+                    const hall = {
+                        rectA,
+                        rectB,
+                        area,
+                    };
+                    this.halls.push(hall);
                 }
             } else if (h > 0) {
                 if (Math.floor(Math.random() * Math.floor(1.25)) < 1.25) {
-                    this.halls.push(new Rectangle(point1.x, point1.y, Math.abs(w), 1));
-                    this.halls.push(new Rectangle(point2.x, point1.y, 1, Math.abs(h)));
+                    const rectA = new Rectangle(point1.x, point1.y, Math.abs(w), 1);
+                    const rectB = new Rectangle(point2.x, point1.y, 1, Math.abs(h));
+                    const areaA = this.generateRectArea(rectA);
+                    const areaB = this.generateRectArea(rectB);
+                    const area = areaA.concat(areaB);
+                    const hall = {
+                        rectA,
+                        rectB,
+                        area,
+                    };
+                    this.halls.push(hall);
                 } else {
-                    this.halls.push(new Rectangle(point1.x, point2.y, Math.abs(w), 1));
-                    this.halls.push(new Rectangle(point1.x, point1.y, 1, Math.abs(h)));
+                    const rectA = new Rectangle(point1.x, point2.y, Math.abs(w), 1);
+                    const rectB = new Rectangle(point1.x, point1.y, 1, Math.abs(h));
+                    const areaA = this.generateRectArea(rectA);
+                    const areaB = this.generateRectArea(rectB);
+                    const area = areaA.concat(areaB);
+                    const hall = {
+                        rectA,
+                        rectB,
+                        area,
+                    };
+                    this.halls.push(hall);
                 }
             } else {
                 // if (h === 0)
-                this.halls.push(new Rectangle(point1.x, point1.y, Math.abs(w), 1));
+                const rectA = new Rectangle(point1.x, point1.y, Math.abs(w), 1);
+                const area = this.generateRectArea(rectA);
+                const hall = {
+                    rectA,
+                    area,
+                };
+                this.halls.push(hall);
             }
         } else {
             // if (w === 0)
             if (h < 0) {
-                this.halls.push(new Rectangle(point2.x, point2.y, 1, Math.abs(h)));
+                const rectA = new Rectangle(point2.x, point2.y, 1, Math.abs(h));
+                const area = this.generateRectArea(rectA);
+                const hall = {
+                    rectA,
+                    area,
+                };
+                this.halls.push(hall);
             } else if (h > 0) {
-                this.halls.push(new Rectangle(point1.x, point1.y, 1, Math.abs(h)));
+                const rectA = new Rectangle(point1.x, point1.y, 1, Math.abs(h));
+                const area = this.generateRectArea(rectA);
+                const hall = {
+                    rectA,
+                    area,
+                };
+                this.halls.push(hall);
             }
         }
     }
