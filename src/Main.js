@@ -96,11 +96,17 @@ const Main = ({ width, height, tilesize }) => {
                     style={{ zIndex: 2 }}
                 ></canvas>
                 <canvas
+                    id="mon-canvas"
+                    width={width * tilesize}
+                    height={height * tilesize}
+                    style={{ zIndex: 2 }}
+                ></canvas>
+                <canvas
                     id="src-canvas"
                     ref={canvasRef}
                     width={width * tilesize}
                     height={height * tilesize}
-                    style={{ zIndex: 1 }}
+                    style={{ zIndex: 2 }}
                 ></canvas>
             </div>
             <div className="Game-Sidebar">

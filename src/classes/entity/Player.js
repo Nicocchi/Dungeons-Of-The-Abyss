@@ -22,15 +22,6 @@ class Player extends Entity {
 
     }
 
-    // Move the player
-    move(dx, dy) {
-        if (this.attributes.health <= 0) return;
-        this.x += dx;
-        this.y += dy;
-        this.prevX += dx;
-        this.prevY += dy;
-    }
-
     use(item) {
         switch(item.attributes.type) {
             case "health-potion": {
@@ -53,11 +44,7 @@ class Player extends Entity {
         this.inventory.push(item);
     }
 
-    copyPlayer() {
-        let newPlayer = new Player();
-        Object.assign(newPlayer, this);
-        return newPlayer;
-    }
+    
 }
 
 export default Player;

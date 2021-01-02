@@ -43,8 +43,24 @@ const lootTable = [
 
 // Table of monsters
 const monsterTable = [
-    { name: "Ogre", color: "lightgrey", ascii: "O", offset: { x: 0, y: 0 }, health: 6, imgSrc: "/images/Ogre_001.png" },
-    { name: "Snake", color: "green", ascii: "k", offset: { x: 0, y: 0 }, health: 3, imgSrc: "/images/Snake_001.png" },
+    {
+        name: "Ogre",
+        color: "lightgrey",
+        ascii: "O",
+        offset: { x: 0, y: 0 },
+        health: 6,
+        imgSrc: "/images/Ogre_001.png",
+        type: "monster",
+    },
+    {
+        name: "Snake",
+        color: "green",
+        ascii: "k",
+        offset: { x: 0, y: 0 },
+        health: 3,
+        imgSrc: "/images/Snake_001.png",
+        type: "monster",
+    },
     {
         name: "Slime",
         color: "darkgreen",
@@ -52,6 +68,7 @@ const monsterTable = [
         offset: { x: 0, y: 0 },
         health: 2,
         imgSrc: "/images/Slime_001.png",
+        type: "monster",
     },
     // { name: "Dragon", color: "red", ascii: "D", offset: { x: 0, y: -6 }, health: 10, imgSrc: "/images/Dragon_001.png" },
 ];

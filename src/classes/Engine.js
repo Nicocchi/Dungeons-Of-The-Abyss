@@ -1,7 +1,8 @@
 import { Player } from "./entity";
 import Spawner from "./Spawner";
-import {Map} from "./map";
-import { randomNumber } from "../utils/utils";
+import { Map } from "./map";
+import { randomNumber, randomRegInt } from "../utils/utils";
+import { Vector2 } from "./math";
 
 class Engine {
     constructor(width, height, tilesize) {
@@ -9,6 +10,8 @@ class Engine {
         this.height = height;
         this.tilesize = tilesize;
         this.entities = [new Player(0, 0, 16)];
+        this.monsters = [];
+        this.loot = [];
         this.entitiesToDraw = this.entities;
         this.history = [
             <p style={{ color: "#ffff00" }}>Welcome to Dungeons of the Abyss</p>,
@@ -35,6 +38,7 @@ class Engine {
         // Clear all entities except the player
         this.entities = this.entities.filter((e) => e === this.player);
         this.entitiesToDraw = this.entities;
+        this.monsters = [];
 
         this.moveToSpace(this.player);
 
@@ -43,24 +47,46 @@ class Engine {
     }
 
     // Return entity at given x,y location
-    getEntityAtLocation(x, y) {
-        return this.entities.find((entity) => entity.x === x && entity.y === y && entity !== this.player);
+    getEntityAtLocation(x, y, id) {
+        return this.entities.find((entity) => entity.x === x && entity.y === y && entity.id !== id);
+    }
+
+    getMonsterAtLocation(x, y, id) {
+        return this.monsters.find((entity) => entity.x === x && entity.y === y);
     }
 
     changeDungeons() {
-        let entity = this.getEntityAtLocation(this.player.x, this.player.y);
+        let entity = this.getEntityAtLocation(this.player.x, this.player.y, this.player.id);
         entity.action("bump", this);
         this.floor += 1;
         return;
     }
 
+    pathfinding() {
+        let pathStart = [this.width, this.height];
+        let pathEnd = [0, 0];
+        let currentPath = [];
+
+        while (currentPath.length == 0) {
+            pathStart = [Math.floor(Math.random() * this.width), Math.floor(Math.random() * this.height)];
+            pathEnd = [Math.floor(Math.random() * this.width), Math.floor(Math.random() * this.height)];
+            // if (this.map.binaryMap[pathStart[0]][pathStart[1]] == 0) currentPath = findPath(this.map.binaryMap, pathStart, pathEnd, "Manhattan");
+        }
+    }
+
     movePlayer(dx, dy) {
-        if (this.frozen) return;
-        let tempPlayer = this.player.copyPlayer();
+        this.moveMonster();
+        let tempPlayer = this.player.copy();
         tempPlayer.move(dx, dy);
-        let entity = this.getEntityAtLocation(tempPlayer.x, tempPlayer.y);
+        let entity = this.getEntityAtLocation(tempPlayer.x, tempPlayer.y, tempPlayer.id);
+        let monster = this.getMonsterAtLocation(tempPlayer.x, tempPlayer.y);
         if (entity && entity.attributes.name !== "Stairs") {
             entity.action("bump", this);
+            return;
+        }
+
+        if (monster) {
+            monster.action("bump", this);
             return;
         }
 
@@ -71,15 +97,61 @@ class Engine {
         }
     }
 
+    moveMonster() {
+        const num = randomRegInt(0, 3);
+        for (let i = 0; i < this.monsters.length; i++) {
+            // console.log(this.entities[i])
+            let tempEntity = this.monsters[i].copy();
+            
+            // console.log(tempEntity.id, this.entities[i].id)
+            // console.log("Entity", entity);
+            
+            let value = new Vector2();
+            switch (num) {
+                case 0:
+                    value = new Vector2(-1, 0);
+                    break;
+                case 1:
+                    value = new Vector2(0, -1);
+                    break;
+                case 2:
+                    value = new Vector2(1, 0);
+                    break;
+                case 3:
+                    value = new Vector2(0, 1);
+                    break;
+                default:
+                    value = new Vector2(0, 0);
+                    break;
+            }
+            tempEntity.move(value.x, value.y);
+            let entity = this.getEntityAtLocation(tempEntity.x, tempEntity.y, this.monsters[i].id);
+            if (entity) return;
+            if (!this.isWall(tempEntity.x, tempEntity.y)) {
+                this.monsters[i].move(value.x, value.y);
+            }
+        }
+    }
+
     // Adds an entity to the world
     add(entity) {
-        this.entities.push(entity);
-        this.entitiesToDraw.push(entity);
+        if (entity.attributes.type === "monster") {
+            this.monsters.push(entity);
+        } else {
+            this.entities.push(entity);
+            this.entitiesToDraw.push(entity);
+        }
+        
     }
 
     // Removes an entity from the world
     remove(entity) {
         entity.moved = false;
+        if (entity.attributes.type === "monster") {
+            this.monsters = this.monsters.filter((e) => {
+                return e !== entity;
+            });
+        }
         this.entities = this.entities.filter((e) => {
             return e !== entity;
         });
@@ -138,9 +210,15 @@ class Engine {
 
         // Draw entities
         this.entitiesToDraw.forEach((entity) => {
-            entity.draw(context);
+            let m_context = document.getElementById("loot-canvas").getContext("2d");
+            entity.draw(m_context, this.width, this.height, this.tilesize);
             this.entitiesToDraw = this.entitiesToDraw.filter((e) => e !== entity);
         });
+
+        this.monsters.forEach(entity => {
+            let m_context = document.getElementById("mon-canvas").getContext("2d");
+            entity.draw(m_context, this.width, this.height, this.tilesize);
+        })
     }
 
     drawFloor(context, x, y) {

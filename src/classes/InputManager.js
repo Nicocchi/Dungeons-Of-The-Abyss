@@ -17,16 +17,16 @@ class InputManager {
         e.preventDefault();
 
         switch(e.keyCode) {
-            case 37:
+            case 37: // Left
                 this.broadcast('move', {x: -1, y: 0});
                 break;
-            case 38:
+            case 38: // Up
                 this.broadcast('move', {x: 0, y: -1});
                 break;
-            case 39:
+            case 39: // Right
                 this.broadcast('move', {x: 1, y: 0});
                 break;
-            case 40:
+            case 40: // Down
                 this.broadcast('move', {x: 0, y: 1});
                 break;
             case 13:
