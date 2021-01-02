@@ -160,6 +160,7 @@ class Map {
         }
 
         let vectors = []; // To store all our vectors in for checking later
+        let hallVectors = []; // To store all our vectors in for checking later
 
         // Loop through the rooms and add the vector points to the vector array
         for (let r = 0; r < this.bspMap.rooms.length; r++) {
@@ -174,8 +175,8 @@ class Map {
         for (let h = 0; h < this.bspMap.halls.length; h++) {
             for (let a = 0; a < this.bspMap.halls[h].area.length; a++) {
                 this.hallCount += this.bspMap.halls[h].area[a].length;
-                const tempVects = vectors.concat(this.bspMap.halls[h].area[a]);
-                vectors = tempVects;
+                const tempVects = hallVectors.concat(this.bspMap.halls[h].area[a]);
+                hallVectors = tempVects;
             }
         }
 
@@ -187,6 +188,7 @@ class Map {
                 vectors.some((v) => v.x === point.x && v.y === point.y)
                     ? (this.binaryMap[x][y] = 0)
                     : (this.binaryMap[x][y] = 1);
+                if (hallVectors.some((v) => v.x === point.x && v.y === point.y)) this.binaryMap[x][y] = 2
             }
         }
     }

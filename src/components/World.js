@@ -49,7 +49,7 @@ class World {
     }
 
     changeDungeons() {
-        let entity = this.getEntityAtLocation(this.player.x, this.player.y)
+        let entity = this.getEntityAtLocation(this.player.x, this.player.y);
         entity.action("bump", this);
         this.floor += 1;
         return;
@@ -98,7 +98,11 @@ class World {
     generateCoords(world) {
         let x = this.getRandomInt(world.width - 1);
         let y = this.getRandomInt(world.width - 1);
-        if (world.map.binaryMap[x][y] === 1 || world.map.binaryMap[x][y] === undefined) {
+        if (
+            world.map.binaryMap[x][y] === 1 ||
+            world.map.binaryMap[x][y] === 2 ||
+            world.map.binaryMap[x][y] === undefined
+        ) {
             return this.generateCoords(world);
         } else {
             const coords = {
@@ -175,7 +179,9 @@ class World {
 
     // Check if entity at position is at a wall
     isWall(x, y) {
-        return this.map.binaryMap[x] === undefined || this.map.binaryMap[y] === undefined || this.map.binaryMap[x][y] === 1;
+        return (
+            this.map.binaryMap[x] === undefined || this.map.binaryMap[y] === undefined || this.map.binaryMap[x][y] === 1
+        );
     }
 
     addToHistory(history) {

@@ -103,7 +103,7 @@ const Main = ({ width, height, tilesize }) => {
                     id="player-canvas"
                     width={width * tilesize}
                     height={height * tilesize}
-                    style={{ zIndex: 2 }}
+                    style={{ zIndex: 3 }}
                 ></canvas>
                 <canvas
                     id="loot-canvas"
