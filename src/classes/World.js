@@ -1,6 +1,7 @@
-import Player from "./Player";
+import { Player } from "./entity";
 import Spawner from "./Spawner";
-import Map from "./Map/Map";
+import {Map} from "./map";
+import { randomNumber } from "../utils/utils";
 
 class World {
     constructor(width, height, tilesize) {
@@ -14,8 +15,7 @@ class World {
             "Press ? to display help menu",
         ];
         this.levelGenerated = false;
-        this.map = new Map(this.width, this.height);
-        this.frozen = false;
+        this.map = null;
         this.loading = true;
         this.floor = 1;
     }
@@ -26,11 +26,18 @@ class World {
 
     init() {
         this.loading = true;
+        this.levelGenerated = false;
+        this.map = new Map(this.width, this.height);
         this.map.createBSPMap(this.width, this.height, 20);
         this.map.createBinaryMap();
         console.log("Map", this.map);
 
+        // Clear all entities except the player
+        this.entities = this.entities.filter((e) => e === this.player);
+        this.entitiesToDraw = this.entities;
+
         this.moveToSpace(this.player);
+
         this.spawn();
         this.loading = false;
     }
@@ -38,14 +45,6 @@ class World {
     // Return entity at given x,y location
     getEntityAtLocation(x, y) {
         return this.entities.find((entity) => entity.x === x && entity.y === y && entity !== this.player);
-    }
-
-    setLevelGenerated(generated) {
-        this.levelGenerated = generated;
-    }
-
-    freezeMovement() {
-        this.frozen = true;
     }
 
     changeDungeons() {
@@ -96,8 +95,8 @@ class World {
 
     // Generates coords for an entity. If position is on wall, re-generate.
     generateCoords(world) {
-        let x = this.getRandomInt(world.width - 1);
-        let y = this.getRandomInt(world.width - 1);
+        let x = randomNumber(world.width - 1);
+        let y = randomNumber(world.width - 1);
         if (
             world.map.binaryMap[x][y] === 1 ||
             world.map.binaryMap[x][y] === 2 ||
@@ -114,11 +113,6 @@ class World {
         }
     }
 
-    // Generates a random int
-    getRandomInt(max) {
-        return Math.floor(Math.random() * Math.floor(max));
-    }
-
     // Spawns entities.
     spawn() {
         let spawner = new Spawner(this);
@@ -129,6 +123,7 @@ class World {
 
     // Draw the map
     draw(context) {
+        if (!this.map) return;
         // Only draw walls if the level isn't already generated/renewed.
         // This prevents the world from updating the walls continously, since walls do not
         // change.

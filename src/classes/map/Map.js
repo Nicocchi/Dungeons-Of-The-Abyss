@@ -1,5 +1,5 @@
 import Leaf from "./Leaf";
-import Vector2 from "./Vector2";
+import { Vector2 } from "../math";
 
 class Map {
     constructor(width = 0, height = 0) {
@@ -90,14 +90,14 @@ class Map {
             for (let y = 0; y < height; y++) {
                 ctx.fillStyle = "rgba(166, 5, 104, 0.1)";
                 if (this.bspMap.rooms.some((room) => room.x !== x) && this.bspMap.rooms.some((room) => room.y !== y)) {
-                    // ctx.fillRect(x * 16, y * 16, 16, 16);
+                    ctx.fillRect(x * 16, y * 16, 16, 16);
 
                     const image = new Image();
                     image.src = "images/BrickWall_003.png";
                     var m_canvas = document.getElementById("wall-canvas");
                     var m_context = m_canvas.getContext("2d");
                     image.addEventListener("load", () => {
-                        // m_context.drawImage(image, x * tilesize, y * tilesize);
+                        m_context.drawImage(image, x * tilesize, y * tilesize);
                     });
                 }
             }
@@ -144,7 +144,6 @@ class Map {
         });
     }
 
-
     /**
      * Creates a binary map of the BSP map. Stores inside the map's binaryMap object.
      *
@@ -180,7 +179,7 @@ class Map {
             }
         }
 
-        // Now, re-loop through the binary map and check if the vector coords exists 
+        // Now, re-loop through the binary map and check if the vector coords exists
         // inside the vector array
         for (let x = 0; x < this.binaryMap.length; x++) {
             for (let y = 0; y < this.binaryMap[x].length; y++) {
@@ -188,7 +187,7 @@ class Map {
                 vectors.some((v) => v.x === point.x && v.y === point.y)
                     ? (this.binaryMap[x][y] = 0)
                     : (this.binaryMap[x][y] = 1);
-                if (hallVectors.some((v) => v.x === point.x && v.y === point.y)) this.binaryMap[x][y] = 2
+                if (hallVectors.some((v) => v.x === point.x && v.y === point.y)) this.binaryMap[x][y] = 2;
             }
         }
     }

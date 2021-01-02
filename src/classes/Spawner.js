@@ -1,6 +1,5 @@
-import Loot from "./Loot";
-import Monster from "./Monster";
-import Stairs from "./Stairs";
+import { randomNumber } from "../utils/utils";
+import { Loot, Monster, Stairs } from "./entity";
 
 // Table of loot
 const lootTable = [
@@ -29,7 +28,7 @@ const lootTable = [
         offset: { x: 0, y: 0 },
         imgSrc: "/images/GoldBar_001.png",
         amount: 10,
-        type: "gold"
+        type: "gold",
     },
     {
         name: "Light Armour",
@@ -38,7 +37,7 @@ const lootTable = [
         offset: { x: 0, y: 0 },
         imgSrc: "/images/Armour_001.png",
         type: "armour",
-        def: 4
+        def: 4,
     },
 ];
 
@@ -75,14 +74,14 @@ class Spawner {
     // Spawn random loot
     spawnLoot(spawnCount) {
         this.spawn(spawnCount, () => {
-            return new Loot(0, 0, this.world.tilesize, lootTable[this.world.getRandomInt(lootTable.length)]);
+            return new Loot(0, 0, this.world.tilesize, lootTable[randomNumber(lootTable.length)]);
         });
     }
 
     // Spawn random monsters
     spawnMonsters(spawnCount) {
         this.spawn(spawnCount, () => {
-            return new Monster(0, 0, this.world.tilesize, monsterTable[this.world.getRandomInt(monsterTable.length)]);
+            return new Monster(0, 0, this.world.tilesize, monsterTable[randomNumber(monsterTable.length)]);
         });
     }
 

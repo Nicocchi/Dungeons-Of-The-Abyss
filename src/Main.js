@@ -1,9 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import InputManager from "./InputManager";
-import Player from "./Player";
-import World from "./World";
-import Spawner from "./Spawner";
+import InputManager from "./classes/InputManager";
+import World from "./classes/World";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleRight } from "@fortawesome/free-solid-svg-icons";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
@@ -11,11 +9,9 @@ import { faCircle } from "@fortawesome/free-solid-svg-icons";
 const Main = ({ width, height, tilesize }) => {
     const canvasRef = useRef();
     const [world, setWorld] = useState(new World(width, height, tilesize));
-    const [open, setOpen] = useState(false);
     let inputManager = new InputManager();
 
     useEffect(() => {
-        // console.log("Bind input");
         inputManager.bindKeys();
         inputManager.subscribe(handleInput);
 
@@ -26,7 +22,6 @@ const Main = ({ width, height, tilesize }) => {
     });
 
     useEffect(() => {
-        console.log("Create Map");
         let newWorld = new World();
         Object.assign(newWorld, world);
         newWorld.init();
@@ -34,7 +29,6 @@ const Main = ({ width, height, tilesize }) => {
     }, []);
 
     useEffect(() => {
-        console.log("Draw to canvas");
         const ctx = canvasRef.current.getContext("2d");
         ctx.clearRect(0, 0, width * tilesize, height * tilesize);
         world.draw(ctx);
@@ -62,18 +56,8 @@ const Main = ({ width, height, tilesize }) => {
         let newWorld = new World();
         Object.assign(newWorld, world);
         const ctx = canvasRef.current.getContext("2d");
-        // ctx.scale(9, 3)
         newWorld.player.use(item);
         setWorld(newWorld);
-    };
-
-    const goDeeper = () => {
-        let newWorld = new World();
-        Object.assign(newWorld, world);
-        const ctx = canvasRef.current.getContext("2d");
-        // newWorld.player.use(item);
-        setWorld(newWorld);
-        setOpen(false);
     };
 
     return (
