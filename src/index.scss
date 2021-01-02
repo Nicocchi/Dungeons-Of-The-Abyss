@@ -131,3 +131,25 @@ body > #root > div {
         color: rgb(26, 162, 224);
     }
 }
+
+.modal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    color: #FFF;
+    background-color: #181621;
+    height: 100%;
+    width: 100%;
+
+    span {
+        display: flex;
+        justify-content: space-around;
+    }
+
+    button {
+        border: none;
+        width: 150px;
+        height: 60px;
+    }
+}

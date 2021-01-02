@@ -29,6 +29,8 @@ class InputManager {
             case 40:
                 this.broadcast('move', {x: 0, y: 1});
                 break;
+            case 13:
+                this.broadcast('changeDungeons', null)
             default:
                 break;
         }

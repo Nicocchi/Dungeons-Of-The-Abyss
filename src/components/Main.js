@@ -10,9 +10,8 @@ import { faCircle } from "@fortawesome/free-solid-svg-icons";
 
 const Main = ({ width, height, tilesize }) => {
     const canvasRef = useRef();
-    // const [player, setPlayer] = useState(new Player(1, 2, tilesize));
-    const [world, setWorld] = useState(new World());
-    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+    const [world, setWorld] = useState(new World(width, height, tilesize));
+    const [open, setOpen] = useState(false);
     let inputManager = new InputManager();
 
     useEffect(() => {
@@ -28,8 +27,8 @@ const Main = ({ width, height, tilesize }) => {
 
     useEffect(() => {
         console.log("Create Map");
-        let newWorld = new World(width, height, tilesize);
-        // Object.assign(newWorld, world);
+        let newWorld = new World();
+        Object.assign(newWorld, world);
         newWorld.init();
         setWorld(newWorld);
     }, []);
@@ -45,9 +44,18 @@ const Main = ({ width, height, tilesize }) => {
         let newWorld = new World();
         Object.assign(newWorld, world);
         const ctx = canvasRef.current.getContext("2d");
-        newWorld.movePlayer(data.x, data.y, ctx);
-        setWorld(newWorld);
-        // setMousePos({x: data.x, y: data.y})
+        switch (action) {
+            case "move":
+                newWorld.movePlayer(data.x, data.y, ctx);
+                setWorld(newWorld);
+                break;
+            case "changeDungeons":
+                newWorld.changeDungeons();
+                setWorld(newWorld);
+                break;
+            default:
+                break;
+        }
     };
 
     const handleItem = (item) => {
@@ -59,15 +67,23 @@ const Main = ({ width, height, tilesize }) => {
         setWorld(newWorld);
     };
 
+    const goDeeper = () => {
+        let newWorld = new World();
+        Object.assign(newWorld, world);
+        const ctx = canvasRef.current.getContext("2d");
+        // newWorld.player.use(item);
+        setWorld(newWorld);
+        setOpen(false);
+    };
+
     return (
         <div id="GameWrapper" className="Game-Wrapper">
             <div className="container">
-                {/* <canvas
-                    id="myCanvas"
-                    width={width * tilesize}
-                    height={height * tilesize}
-                    style={{ zIndex: 6, backgroundColor: "transparent" }}
-                ></canvas> */}
+                <div className="modal" style={{ display: world.loading ? "flex" : "none" }}>
+                    <div className="modal-content">
+                        <h1>Building the abyss</h1>
+                    </div>
+                </div>
                 <canvas
                     id="bg-canvas"
                     width={width * tilesize}
@@ -81,26 +97,26 @@ const Main = ({ width, height, tilesize }) => {
                     id="wall-canvas"
                     width={width * tilesize}
                     height={height * tilesize}
-                    style={{ zIndex: 1}}
+                    style={{ zIndex: 1 }}
                 ></canvas>
                 <canvas
                     id="player-canvas"
                     width={width * tilesize}
                     height={height * tilesize}
-                    style={{ zIndex: 20 }}
+                    style={{ zIndex: 2 }}
                 ></canvas>
                 <canvas
                     id="loot-canvas"
                     width={width * tilesize}
                     height={height * tilesize}
-                    style={{ zIndex: 2, display: "none" }}
+                    style={{ zIndex: 2 }}
                 ></canvas>
                 <canvas
                     id="src-canvas"
                     ref={canvasRef}
                     width={width * tilesize}
                     height={height * tilesize}
-                    style={{ zIndex: 12 }}
+                    style={{ zIndex: 1 }}
                 ></canvas>
             </div>
             <div className="Game-Sidebar">
@@ -122,6 +138,17 @@ const Main = ({ width, height, tilesize }) => {
                     >
                         <p>Gold:</p>
                         <p className="hp-num">{world.player.attributes.gold}</p>
+                    </span>
+                    <span
+                        style={{
+                            fontWeight: "bold",
+                            fontSize: "0.8em",
+                            display: "flex",
+                            justifyContent: "space-between",
+                        }}
+                    >
+                        <p>Floor:</p>
+                        <p className="hp-num">{world.floor}</p>
                     </span>
                     <div className="base-stats">
                         <span>
@@ -161,7 +188,7 @@ const Main = ({ width, height, tilesize }) => {
                     </ul>
                 </div>
             </div>
-            <img id="GFG" src="/images/BrickWall_003.png" style={{display: "none"}} />
+            <img id="GFG" src="/images/BrickWall_003.png" style={{ display: "none" }} />
             <p style={{ position: "absolute", top: 0, left: 0, color: "#FFF" }}>
                 X: {world.player.x}, Y:{world.player.y}
             </p>

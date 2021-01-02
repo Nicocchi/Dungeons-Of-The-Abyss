@@ -15,12 +15,9 @@ class World {
         ];
         this.levelGenerated = false;
         this.map = new Map(this.width, this.height);
-
-        // Create the worldmap
-        this.worldmap = new Array(this.width);
-        // for (let x = 0; x < this.width; x++) {
-        //     this.worldmap[x] = new Array(this.height);
-        // }
+        this.frozen = false;
+        this.loading = true;
+        this.floor = 1;
     }
 
     get player() {
@@ -28,39 +25,50 @@ class World {
     }
 
     init() {
+        this.loading = true;
         this.map.createBSPMap(this.width, this.height, 20);
         this.map.createBinaryMap();
         console.log("Map", this.map);
-        // this.moveToSpace(this.player);
 
-        // newWorld.moveToSpace(world.player);
-        // newWorld.spawn();
+        this.moveToSpace(this.player);
+        this.spawn();
+        this.loading = false;
     }
 
     // Return entity at given x,y location
-    getEntityAtLocatoin(x, y) {
-        return this.entities.find((entity) => entity.x === x && entity.y === y);
+    getEntityAtLocation(x, y) {
+        return this.entities.find((entity) => entity.x === x && entity.y === y && entity !== this.player);
     }
 
     setLevelGenerated(generated) {
         this.levelGenerated = generated;
     }
 
-    movePlayer(dx, dy, context) {
+    freezeMovement() {
+        this.frozen = true;
+    }
+
+    changeDungeons() {
+        let entity = this.getEntityAtLocation(this.player.x, this.player.y)
+        entity.action("bump", this);
+        this.floor += 1;
+        return;
+    }
+
+    movePlayer(dx, dy) {
+        if (this.frozen) return;
         let tempPlayer = this.player.copyPlayer();
         tempPlayer.move(dx, dy);
-        let entity = this.getEntityAtLocatoin(tempPlayer.x, tempPlayer.y);
-        if (entity) {
+        let entity = this.getEntityAtLocation(tempPlayer.x, tempPlayer.y);
+        if (entity && entity.attributes.name !== "Stairs") {
             entity.action("bump", this);
             return;
         }
 
-        if (this.isWall(tempPlayer.x, tempPlayer.y)) {
-            this.addToHistory(<p style={{ color: "#c23538" }}>Path is blocked</p>);
-            // console.log(`Way blocked at ${tempPlayer.x}:${tempPlayer.y}!`);
-        } else {
+        if (!this.isWall(tempPlayer.x, tempPlayer.y)) {
             this.player.move(dx, dy);
             this.entitiesToDraw.push(this.player);
+            // this.addToHistory(<p style={{ color: "#c23538" }}>Path is blocked</p>);
         }
     }
 
@@ -82,103 +90,32 @@ class World {
     // Moves an entity to a space not in a wall or occupied by another entity
     moveToSpace(entity) {
         const coords = this.generateCoords(this);
-        // console.log("Generated Coords", coords);
         entity.x = coords.x;
         entity.y = coords.y;
-        // console.log(`${entity.attributes.name} Pos:`, entity.x, entity.y);
     }
 
-    
-
+    // Generates coords for an entity. If position is on wall, re-generate.
     generateCoords(world) {
-        let x = this.getRandomInt(this.width - 1);
-        let y = this.getRandomInt(this.height - 1);
-
-        this.map.bspMap.rooms.forEach(room => {
-            // console.log("ROOM", room)
-            // const roomCoords = this.getRoomCoords(room);
-            // console.log(roomCoords)
-        })
-
-        // if (row.some(coord => coord.x !== x) && row.some(coord => coord.y !== y)) {
-        //     // return this.generateCoords();
-        // }
-
-        const coords = {x, y};
-        return coords;
-
-        // let generating = true;
-        // let x = 0;
-        // let y = 0;
-
-        // while(generating) {
-        //     let generating = false;
-        //     let tempX = this.getRandomInt(world.width - 1);
-        //     let tempY = this.getRandomInt(world.width - 1);
-        //     // this.map.bspMap.rooms.forEach(room => {
-        //     //     const row = this.getRoomCoords(room);
-        //     //     if (row.some(coord => coord.x !== tempX) && row.some(coord => coord.y !== tempY)) {
-        //     //         generating = true;
-        //     //     } else {
-        //     //         x = tempX;
-        //     //         y = tempY;
-        //     //         break;
-        //     //     }
-        //     // })
-        // }
-
-        // const coords = {
-        //     x,
-        //     y,
-        // };
-
-        // return coords;
+        let x = this.getRandomInt(world.width - 1);
+        let y = this.getRandomInt(world.width - 1);
+        if (world.map.binaryMap[x][y] === 1 || world.map.binaryMap[x][y] === undefined) {
+            return this.generateCoords(world);
+        } else {
+            const coords = {
+                x,
+                y,
+                worldPosition: world.map.binaryMap[x][y],
+            };
+            return coords;
+        }
     }
 
+    // Generates a random int
     getRandomInt(max) {
         return Math.floor(Math.random() * Math.floor(max));
     }
 
-    // Generate a random map
-    createRandomMap() {
-        for (let x = 0; x < this.width; x++) {
-            for (let y = 0; y < this.height; y++) {
-                this.worldmap[x][y] = Math.round(Math.random()); // Puts either a 0 or 1 in the tile
-            }
-        }
-    }
-
-    addCell(map, x, y) {
-        map[x][y] = { x, y };
-    }
-
-    // Generate a rogue map
-    // createRogueMap() {
-    //     var map = new Map.Rogue(this.width, this.height, { cellHeight: 3, cellWidth: 6 });
-
-    //     var userCallback = (x, y, value) => {
-    //         // Make sure there are walls on all the edges
-    //         if (x === 0 || y === 0 || x === this.width - 1 || y === this.height - 1) {
-    //             this.worldmap[x][y] = 1; // Create walls around the edges of map
-    //             return;
-    //         }
-    //         this.worldmap[x][y] = value === 0 ? 0 : 1;
-    //     };
-
-    //     map.create(userCallback);
-    //     const coords = this.generateCoords(this);
-    //     this.player.x = coords.x;
-    //     this.player.y = coords.y;
-    //     this.moveToSpace(this.player);
-
-    //     this.entitiesToDraw = this.entities;
-    //     var m_canvas = document.getElementById("fg-canvas");
-    //     var m_ctx2 = document.getElementById("loot-canvas").getContext("2d");
-    //     var m_context = m_canvas.getContext("2d");
-    //     m_context.clearRect(0, 0, this.width * this.tilesize, this.height * this.tilesize);
-    //     m_ctx2.clearRect(0, 0, this.width * this.tilesize, this.height * this.tilesize);
-    // }
-
+    // Spawns entities.
     spawn() {
         let spawner = new Spawner(this);
         spawner.spawnLoot(3);
@@ -186,42 +123,15 @@ class World {
         spawner.spawnStairs();
     }
 
-    // Generate a cellular map
-    // createCellularMap() {
-    //     var map = new Map.Cellular(this.width, this.height, { connected: true });
-    //     map.randomize(0.5);
-    //     var userCallback = (x, y, value) => {
-    //         // Make sure there are walls on all the edges
-    //         if (x === 0 || y === 0 || x === this.width - 1 || y === this.height - 1) {
-    //             this.worldmap[x][y] = 1; // Create walls around the edges of map
-    //             return;
-    //         }
-    //         this.worldmap[x][y] = value === 0 ? 1 : 0;
-    //     };
-
-    //     map.create(userCallback);
-    //     map.connect(userCallback, 1);
-
-    //     this.entitiesToDraw = this.entities;
-    //     var m_canvas = document.getElementById("fg-canvas");
-    //     var m_ctx2 = document.getElementById("loot-canvas").getContext("2d");
-    //     var m_context = m_canvas.getContext("2d");
-    //     m_context.clearRect(0, 0, this.width * this.tilesize, this.height * this.tilesize);
-    //     m_ctx2.clearRect(0, 0, this.width * this.tilesize, this.height * this.tilesize);
-    // }
-
     // Draw the map
     draw(context) {
         // Only draw walls if the level isn't already generated/renewed.
         // This prevents the world from updating the walls continously, since walls do not
         // change.
-        // this.map.drawDebug(context, this.width, this.height, this.tilesize);
         if (!this.levelGenerated) {
             for (let x = 0; x < this.width; x++) {
                 for (let y = 0; y < this.height; y++) {
-                    // this.drawFloor(context, x, y);
-                    // this.drawWall2(context, x, y, this.map)
-                    // if (this.worldmap[x][y] === 1) this.drawWall(context, x, y);
+                    this.drawFloor(context, x, y);
                     if (this.map.binaryMap[x][y] === 1) this.drawWall(context, x, y);
                 }
             }
@@ -256,6 +166,7 @@ class World {
         image.src = "images/BrickWall_003.png";
         var m_canvas = document.getElementById("wall-canvas");
         var m_context = m_canvas.getContext("2d");
+        m_context.clearRect(0, 0, this.width * this.tilesize, this.height * this.tilesize);
         image.addEventListener("load", () => {
             m_context.drawImage(image, x * this.tilesize, y * this.tilesize);
         });
@@ -264,21 +175,12 @@ class World {
 
     // Check if entity at position is at a wall
     isWall(x, y) {
-        return this.worldmap[x] === undefined || this.worldmap[y] === undefined || this.worldmap[x][y] === 1;
+        return this.map.binaryMap[x] === undefined || this.map.binaryMap[y] === undefined || this.map.binaryMap[x][y] === 1;
     }
 
     addToHistory(history) {
         this.history.push(history);
         if (this.history.length > 14) this.history.shift();
-    }
-}
-
-function search(x, y, myArray) {
-    if (myArray === undefined) return false;
-    for (var i = 0; i < myArray.length; i++) {
-        if (myArray[i].x === x && myArray[i].y === y) {
-            return true;
-        }
     }
 }
 
